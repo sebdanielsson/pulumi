@@ -1,0 +1,10 @@
+name: authentik
+description: Deploy authentik to Hetzner.
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: typescript
