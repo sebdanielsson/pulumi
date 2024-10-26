@@ -9,7 +9,7 @@ on:
 jobs:
   pulumi:
     name: Run Pulumi
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     concurrency:
       group: ${{ github.workflow }}
     steps:
@@ -43,7 +43,7 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           TS_CLIENTID: op://prod/ts-gh-action-oauth/username
           TS_CLIENTSECRET: op://prod/ts-gh-action-oauth/credential
-          PULUMI_ACCESS_TOKEN: op://Private/pulumi-nimbus/credential
+          PULUMI_ACCESS_TOKEN: op://prod/pulumi-authentik/credential
 
       - name: Get latest Tailscale version
         id: get_latest_ts_version
