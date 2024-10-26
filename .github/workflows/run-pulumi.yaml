@@ -60,6 +60,8 @@ jobs:
 
       - name: Inject secrets
         run: op inject -i ./authentik/secrets.env.tpl -o secrets.env
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 
       - name: Run Pulumi up
         uses: pulumi/actions@v6
