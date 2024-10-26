@@ -1,32 +1,34 @@
 import * as pulumi from "@pulumi/pulumi";
+import { remote, types } from "@pulumi/command";
 import * as onepassword from "@1password/pulumi-onepassword";
 import * as github from "@pulumi/github";
 import * as hcloud from "@pulumi/hcloud";
 import * as tailscale from "@pulumi/tailscale";
 import * as command from "@pulumi/command";
-import { equal } from "assert";
+
+const config = new pulumi.Config();
 
 const vault = onepassword.getVault({
-    name: "prod",
+  name: "prod",
 });
 
 const tailscaleAuthKey = new tailscale.TailnetKey("tailscale-authkey", {
-    description: "Authentik Production Server",
-    ephemeral: false,
-    recreateIfInvalid: 'always',
-    reusable: true,
-    preauthorized: true,
-    tags: ["tag:server"],
+  description: "Authentik Production Server",
+  ephemeral: false,
+  recreateIfInvalid: 'always',
+  reusable: true,
+  preauthorized: true,
+  tags: ["tag:server"],
 });
 
 const sebastianSshKey = onepassword.getItem({
-    title: "Sebastian SSH Key",
-    vault: 'prod',
+  title: "Sebastian SSH Key",
+  vault: 'prod',
 });
 
 const sshKey = new hcloud.SshKey("Sebastian SSH Key", {
-    name: "Sebastian SSH Key",
-    publicKey: sebastianSshKey.then(sebastianSshKey => sebastianSshKey.publicKey),
+  name: "Sebastian SSH Key",
+  publicKey: sebastianSshKey.then(sebastianSshKey => sebastianSshKey.publicKey),
 });
 
 // Create cloud-init script
@@ -59,23 +61,44 @@ runcmd:
 `
 
 const authentikServer = new hcloud.Server("authentik-prod-1", {
-    name: "authentik-prod-1",
-    image: "fedora-40",
-    serverType: "cax11",
-    location: "hel1",
-    publicNets: [{
-        ipv4Enabled: true,
-        ipv6Enabled: true,
-    }],
-    sshKeys: ["Sebastian SSH Key"],
-    userData: userData,
-    labels: {
-        env: "prod",
-        app: "authentik",
-    },
-    rebuildProtection: false,
-    deleteProtection: false,
+  name: "authentik-prod-1",
+  image: "fedora-40",
+  serverType: "cax11",
+  location: "hel1",
+  publicNets: [{
+    ipv4Enabled: true,
+    ipv6Enabled: true,
+  }],
+  sshKeys: ["Sebastian SSH Key"],
+  userData: userData,
+  labels: {
+    env: "prod",
+    app: "authentik",
+  },
+  rebuildProtection: false,
+  deleteProtection: false,
 });
+
+// SSH connection details
+const connection: types.input.remote.ConnectionArgs = {
+  host: authentikServer.name,
+  user: "sebastian",
+};
+
+// Copy a config file to our server.
+const transferAuthentikConfig = new command.remote.CopyToRemote("transferAuthentikConfig", {
+  /* triggers: [sameSHA256Hash], */
+  connection,
+  source: new pulumi.asset.FileArchive("./authentik"),
+  remotePath: "/opt/authentik",
+});
+
+// Execute a basic command on our server.
+const extractAuthentikConfig = new command.remote.Command("extractAuthentikConfig", {
+  triggers: [transferAuthentikConfig],
+  connection,
+  create: "tar -xvf /opt/authentik/authentik.tar.gz -C /opt/authentik",
+}, { dependsOn: transferAuthentikConfig });
 
 // Export the server IP
 export const authentikServerIpv4Address = authentikServer.ipv4Address;

@@ -1,0 +1,14 @@
+PG_DB="op://prod/docker-authentik/PG_DB"
+PG_USER="op://prod/docker-authentik/PG_USER"
+PG_PASS="op://prod/docker-authentik/PG_PASS"
+AUTHENTIK_SECRET_KEY="op://prod/docker-authentik/AUTHENTIK_SECRET_KEY"
+AUTHENTIK_EMAIL__HOST="op://prod/mailgun-smtp/smtp_host"
+AUTHENTIK_EMAIL__PORT="op://prod/mailgun-smtp/smtp_port"
+AUTHENTIK_EMAIL__USERNAME="op://prod/mailgun-smtp/smtp_username"
+AUTHENTIK_EMAIL__PASSWORD="op://prod/mailgun-smtp/smtp_password"
+AUTHENTIK_EMAIL__FROM="op://prod/mailgun-smtp/smtp_username"
+AUTHENTIK_EMAIL__USE_TLS=true
+AUTHENTIK_EMAIL__USE_SSL=false
+AUTHENTIK_EMAIL__TIMEOUT=10
+COMPOSE_PORT_HTTP=9000
+COMPOSE_PORT_HTTPS=9443
