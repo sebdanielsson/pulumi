@@ -1,0 +1,70 @@
+---
+name: Run Pulumi
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  pulumi:
+    name: Run Pulumi
+    runs-on: ubuntu-22.04
+    concurrency:
+      group: ${{ github.workflow }}
+    steps:
+      - uses: actions/checkout@v4
+    
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+    
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Disable host key checking
+        run: |
+          mkdir -p ~/.ssh
+          echo "Host *" >> ~/.ssh/config
+          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+
+      - name: Install 1Password CLI
+        uses: 1password/install-cli-action@v1
+        with:
+          version: latest
+
+      - name: Load secrets
+        id: op-load-secrets
+        uses: 1password/load-secrets-action@v2
+        with:
+          export-env: false
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          TS_CLIENTID: op://prod/ts-gh-action-oauth/username
+          TS_CLIENTSECRET: op://prod/ts-gh-action-oauth/credential
+          PULUMI_ACCESS_TOKEN: op://Private/pulumi-nimbus/credential
+
+      - name: Get latest Tailscale version
+        id: get_latest_ts_version
+        run: |
+          echo "ts_latest=$(curl --silent https://api.github.com/repos/tailscale/tailscale/releases/latest | grep '\"tag_name\":' | sed -E 's/.*\"([^"]+)\".*/\1/' | sed 's/^v\(.*\)/\1/')" >> $GITHUB_OUTPUT
+
+      - name: Setup Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          version: 1.76.1 # or "steps.get_latest_ts_version.outputs.ts_latest" for latest
+          oauth-client-id: ${{ steps.op-load-secrets.outputs.TS_CLIENTID }}
+          oauth-secret: ${{ steps.op-load-secrets.outputs.TS_CLIENTSECRET }}
+          tags: tag:ci
+
+      - name: Inject secrets
+        run: op inject -i ./authentik/secrets.env.tpl -o secrets.env
+
+      - name: Run Pulumi up
+        uses: pulumi/actions@v6
+        with:
+          command: up
+          stack-name: authentik
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ steps.op-load-secrets.outputs.PULUMI_ACCESS_TOKEN }}
