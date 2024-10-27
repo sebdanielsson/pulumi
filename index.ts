@@ -62,14 +62,11 @@ runcmd:
 `
 
 const serverId = new random.RandomId("serverId", {
-  keepers: {
-    string: "string",
-  },
   byteLength: 2,
 });
 
-const authentikServer = serverId.hex.apply(hex => new hcloud.Server(`authentik-prod-${hex}`, {
-  name: `authentik-prod-${hex}`,
+const authentikServer = new hcloud.Server(`authentik-prod-${serverId.hex}`, {
+  name: pulumi.interpolate`authentik-prod-${serverId.hex}`,
   image: "fedora-40",
   serverType: "cax11",
   location: "hel1",
@@ -85,7 +82,7 @@ const authentikServer = serverId.hex.apply(hex => new hcloud.Server(`authentik-p
   },
   rebuildProtection: false,
   deleteProtection: false,
-}));
+});
 
 // SSH connection details
 const connection: types.input.remote.ConnectionArgs = {
@@ -95,7 +92,6 @@ const connection: types.input.remote.ConnectionArgs = {
 
 // Copy a config file to our server.
 const transferAuthentikConfig = new command.remote.CopyToRemote("transferAuthentikConfig", {
-  /* triggers: [sameSHA256Hash], */
   connection,
   source: new pulumi.asset.FileArchive("./authentik"),
   remotePath: "/opt/authentik",
