@@ -105,6 +105,7 @@ const extractAuthentikConfig = new command.remote.Command("extractAuthentikConfi
 }, { dependsOn: transferAuthentikConfig });
 
 // Export the server IP
+export const authentikServerId = authentikServer.id;
+export const authentikServerName = authentikServer.name;
 export const authentikServerIpv4Address = authentikServer.ipv4Address;
 export const authentikServerIpv6Address = authentikServer.ipv6Address;
-export const authentikServerId = authentikServer.id;
