@@ -68,8 +68,8 @@ const serverId = new random.RandomId("serverId", {
   byteLength: 8,
 });
 
-const authentikServer = new hcloud.Server(`authentik-prod-${serverId.hex}`, {
-  name: `authentik-prod-${serverId.hex}`,
+const authentikServer = serverId.hex.apply(hex => new hcloud.Server(`authentik-prod-${hex}`, {
+  name: `authentik-prod-${hex}`,
   image: "fedora-40",
   serverType: "cax11",
   location: "hel1",
@@ -85,7 +85,7 @@ const authentikServer = new hcloud.Server(`authentik-prod-${serverId.hex}`, {
   },
   rebuildProtection: false,
   deleteProtection: false,
-});
+}));
 
 // Leave Tailscale on server deletion so name can be reused
 const unregisterVpnCommand = new command.local.Command("unregisterVpn", {
