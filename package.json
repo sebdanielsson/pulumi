@@ -11,7 +11,10 @@
         "@pulumi/github": "^6.3.0",
         "@pulumi/hcloud": "^1.20.4",
         "@pulumi/pulumi": "^3.135.1",
-        "@pulumi/tailscale": "^0.17.1"
+        "@pulumi/random": "^4.16.7",
+        "@pulumi/tailscale": "^0.17.1",
+        "i": "^0.3.7",
+        "npm": "^10.9.0"
     },
     "engines": {
         "node": ">=20.18.0",

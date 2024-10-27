@@ -1,4 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
+import * as random from "@pulumi/random";
 import { remote, types } from "@pulumi/command";
 import * as onepassword from "@1password/pulumi-onepassword";
 import * as github from "@pulumi/github";
@@ -60,8 +61,15 @@ runcmd:
   - tailscale up --authkey ${tailscaleAuthKey.key} --ssh
 `
 
-const authentikServer = new hcloud.Server("authentik-prod-1", {
-  name: "authentik-prod-1",
+const serverId = new random.RandomId("serverId", {
+  keepers: {
+    string: "string",
+  },
+  byteLength: 8,
+});
+
+const authentikServer = new hcloud.Server(`authentik-prod-${serverId.hex}`, {
+  name: `authentik-prod-${serverId.hex}`,
   image: "fedora-40",
   serverType: "cax11",
   location: "hel1",
@@ -77,6 +85,15 @@ const authentikServer = new hcloud.Server("authentik-prod-1", {
   },
   rebuildProtection: false,
   deleteProtection: false,
+});
+
+// Leave Tailscale on server deletion so name can be reused
+const unregisterVpnCommand = new command.local.Command("unregisterVpn", {
+  create: pulumi.interpolate`echo "Unregistering server ${authentikServer.id} from VPN" && ./unregister-vpn.sh ${authentikServer.id}`,
+}, { dependsOn: authentikServer });
+
+pulumi.runtime.registerResourceOutputs(authentikServer, {
+  delete: unregisterVpnCommand.create,
 });
 
 // SSH connection details
@@ -103,3 +120,4 @@ const extractAuthentikConfig = new command.remote.Command("extractAuthentikConfi
 // Export the server IP
 export const authentikServerIpv4Address = authentikServer.ipv4Address;
 export const authentikServerIpv6Address = authentikServer.ipv6Address;
+export const authentikServerId = authentikServer.id;
