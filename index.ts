@@ -65,7 +65,7 @@ const serverId = new random.RandomId("serverId", {
   keepers: {
     string: "string",
   },
-  byteLength: 8,
+  byteLength: 2,
 });
 
 const authentikServer = serverId.hex.apply(hex => new hcloud.Server(`authentik-prod-${hex}`, {
