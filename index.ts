@@ -92,6 +92,7 @@ const connection: types.input.remote.ConnectionArgs = {
 
 // Copy a config file to our server.
 const transferAuthentikConfig = new command.remote.CopyToRemote("transferAuthentikConfig", {
+  triggers: [authentikServer],
   connection,
   source: new pulumi.asset.FileArchive("./authentik"),
   remotePath: "/opt/authentik",
