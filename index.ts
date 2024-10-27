@@ -104,7 +104,7 @@ const extractAuthentikConfig = new command.remote.Command("extractAuthentikConfi
   create: "tar -xvf /opt/authentik/authentik.tar.gz -C /opt/authentik",
 }, { dependsOn: transferAuthentikConfig });
 
-// Export the server IP
+// Export properties
 export const authentikServerId = authentikServer.id;
 export const authentikServerName = authentikServer.name;
 export const authentikServerIpv4Address = authentikServer.ipv4Address;
