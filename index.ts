@@ -65,8 +65,8 @@ const serverId = new random.RandomId("serverId", {
   byteLength: 2,
 });
 
-const authentikServer = new hcloud.Server(`authentik-prod-${serverId.hex}`, {
-  name: pulumi.interpolate`authentik-prod-${serverId.hex}`,
+const authentikServer = serverId.hex.apply(hex => new hcloud.Server(`authentik-prod-${hex}`, {
+  name: `authentik-prod-${hex}`,
   image: "fedora-40",
   serverType: "cax11",
   location: "hel1",
@@ -82,7 +82,7 @@ const authentikServer = new hcloud.Server(`authentik-prod-${serverId.hex}`, {
   },
   rebuildProtection: false,
   deleteProtection: false,
-});
+}));
 
 // SSH connection details
 const connection: types.input.remote.ConnectionArgs = {
