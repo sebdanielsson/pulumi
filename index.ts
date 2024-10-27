@@ -87,15 +87,6 @@ const authentikServer = serverId.hex.apply(hex => new hcloud.Server(`authentik-p
   deleteProtection: false,
 }));
 
-// Leave Tailscale on server deletion so name can be reused
-const unregisterVpnCommand = new command.local.Command("unregisterVpn", {
-  create: pulumi.interpolate`echo "Unregistering server ${authentikServer.id} from VPN" && ./unregister-vpn.sh ${authentikServer.id}`,
-}, { dependsOn: authentikServer });
-
-pulumi.runtime.registerResourceOutputs(authentikServer, {
-  delete: unregisterVpnCommand.create,
-});
-
 // SSH connection details
 const connection: types.input.remote.ConnectionArgs = {
   host: authentikServer.name,
