@@ -63,6 +63,9 @@ jobs:
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 
+      - name: Check connection
+        run: tailscale ping hogsmeade
+
       - name: Run Pulumi up
         uses: pulumi/actions@v6
         with:
