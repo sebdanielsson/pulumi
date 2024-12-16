@@ -14,7 +14,7 @@
         "@pulumi/random": "^4.16.7",
         "@pulumi/tailscale": "^0.17.4",
         "i": "^0.3.7",
-        "npm": "^10.9.0"
+        "npm": "^11.0.0"
     },
     "engines": {
         "node": ">=20.18.0",
